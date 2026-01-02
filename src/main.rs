@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 
+#[derive(Debug, Clone)]
 struct Ressources {
     total_people: u32,
     occupied_people: u32,
@@ -7,6 +8,7 @@ struct Ressources {
     rock: u32,
 }
 
+#[derive(Debug, Clone, Copy)]
 enum Building {
     House,
     Forest,
@@ -25,6 +27,7 @@ impl Building {
     }
 }
 
+#[derive(Debug, Clone)]
 struct State {
     turn: u32,
     spiral: HashMap<(i32, i32), Building>,
@@ -35,7 +38,7 @@ struct State {
 }
 
 impl State {
-    fn print_spiral(&self) -> String {
+    fn spiral_to_string(&self) -> String {
         let (x_min, x_max) = self.x_bounds;
         let (y_min, y_max) = self.y_bounds;
         let mut spiral_string = String::new();
@@ -77,7 +80,7 @@ impl State {
         println!("🪨 Rock: {}", self.ressources.rock);
         println!("\nCity");
         println!("----");
-        println!("{}", self.print_spiral());
+        println!("{}", self.spiral_to_string());
     }
 }
 
@@ -106,7 +109,7 @@ fn run_test() {
         ressources: example_ressources,
         next_position: (0, 1),
     };
-    let res = example.print_spiral();
+    let res = example.spiral_to_string();
     assert_eq!(
         res,
         String::from("⬛⬛⬛⬛⬛\n⬛🏠🟪⬛⬛\n⬛🪚🏠🌲⬛\n⬛🪨🏠🏠⬛\n⬛⬛⬛⬛⬛\n")
