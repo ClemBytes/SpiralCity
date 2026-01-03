@@ -1,14 +1,16 @@
-use std::collections::HashMap;
+use std::{collections::HashMap, io};
+
+use enum_derived::Rand;
 
 #[derive(Debug, Clone)]
-struct Ressources {
+struct GlobalRessources {
     total_people: u32,
     occupied_people: u32,
     wood: u32,
     rock: u32,
 }
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, Rand, PartialEq)]
 enum Building {
     House,
     Forest,
@@ -24,6 +26,23 @@ impl Building {
             Building::Quarry => '🪨',
             Building::Workshop => '🪚',
         }
+    }
+
+    fn get_name(&self) -> String {
+        match *self {
+            Building::House => "House".to_string(),
+            Building::Forest => "Forest".to_string(),
+            Building::Quarry => "Quarry".to_string(),
+            Building::Workshop => "Workshop".to_string(),
+        }
+    }
+
+    fn to_string(&self) -> String {
+        let mut res = String::new();
+        res.push(self.convert_to_char());
+        res.push(' ');
+        res.push_str(&self.get_name());
+        res
     }
 }
 
@@ -41,7 +60,7 @@ struct State {
     spiral: HashMap<(i32, i32), Building>,
     x_bounds: (i32, i32),
     y_bounds: (i32, i32),
-    ressources: Ressources,
+    ressources: GlobalRessources,
     current_position: (i32, i32),
     direction: Direction,
 }
@@ -50,7 +69,7 @@ impl State {
     fn initialize() -> Self {
         let mut initial_spiral = HashMap::new();
         initial_spiral.insert((0, 0), Building::House);
-        let initial_ressources = Ressources {
+        let initial_ressources = GlobalRessources {
             total_people: 1,
             occupied_people: 0,
             wood: 0,
@@ -123,8 +142,49 @@ impl State {
     }
 }
 
+fn choose_building(turn: u32) -> Option<Building> {
+    fn correct_selection(turn: u32, building1: Building, building2: Building) -> bool {
+        if building1 == building2 {
+            return false;
+        }
+
+        if turn == 0 && (building1 == Building::Workshop || building2 == Building::Workshop) {
+            return false;
+        }
+
+        true
+    }
+
+    let mut building1 = Building::House;
+    let mut building2 = Building::House;
+    while !correct_selection(turn, building1, building2) {
+        building1 = Building::rand();
+        building2 = Building::rand();
+    }
+
+    println!("Choose building 1 or 2:");
+    println!("1. {}", building1.to_string());
+    println!("2. {}", building2.to_string());
+    println!("Q. Quit\n");
+
+    let mut buffer = String::new();
+    loop {
+        io::stdin()
+            .read_line(&mut buffer)
+            .expect("Expected first user input");
+        match buffer.strip_suffix("\n").unwrap() {
+            "1" => return Some(building1),
+            "2" => return Some(building2),
+            "Q" => return None,
+            "q" => return None,
+            _ => println!("Please enter a correct value: '1', '2' or 'Q'"),
+        }
+        buffer.clear();
+    }
+}
+
 #[test]
-fn run_test() {
+fn run_tests() {
     // Test spiral print
     let mut example_spiral = HashMap::new();
     example_spiral.insert((0, 0), Building::House);
@@ -135,7 +195,7 @@ fn run_test() {
     example_spiral.insert((-1, 0), Building::Workshop);
     example_spiral.insert((-1, 1), Building::House);
 
-    let example_ressources = Ressources {
+    let example_ressources = GlobalRessources {
         total_people: 4,
         occupied_people: 3,
         wood: 8,
@@ -176,8 +236,8 @@ fn run_test() {
     assert_eq!(example_coordinates.get_next_position(), (-1, 1));
 }
 
-fn main() {
-    println!("--- Running first test for spiral printing ---");
+fn _test_spiral_printing() {
+    println!("--- Trying spiral printing ---");
     let mut example_spiral = HashMap::new();
     example_spiral.insert((0, 0), Building::House);
     example_spiral.insert((1, 0), Building::Forest);
@@ -187,7 +247,7 @@ fn main() {
     example_spiral.insert((-1, 0), Building::Workshop);
     example_spiral.insert((-1, 1), Building::House);
 
-    let example_ressources = Ressources {
+    let example_ressources = GlobalRessources {
         total_people: 4,
         occupied_people: 3,
         wood: 8,
@@ -203,4 +263,14 @@ fn main() {
         direction: Direction::Right,
     };
     example.print();
+}
+
+fn _test_choose_buiding() {
+    // Use turn=0 to check that we never have a workshop in this case
+    let new_building = choose_building(2);
+    println!("Chosen building: {new_building:?}");
+}
+
+fn main() {
+    _test_choose_buiding();
 }
