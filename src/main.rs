@@ -37,7 +37,7 @@ impl Building {
         }
     }
 
-    fn to_string(&self) -> String {
+    fn building_to_string(&self) -> String {
         let mut res = String::new();
         res.push(self.convert_to_char());
         res.push(' ');
@@ -163,8 +163,8 @@ fn choose_building(turn: u32) -> Option<Building> {
     }
 
     println!("Choose building 1 or 2:");
-    println!("1. {}", building1.to_string());
-    println!("2. {}", building2.to_string());
+    println!("1. {}", building1.building_to_string());
+    println!("2. {}", building2.building_to_string());
     println!("Q. Quit\n");
 
     let mut buffer = String::new();
