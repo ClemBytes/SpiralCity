@@ -74,8 +74,7 @@ impl State {
         for y in ((y_min - 1)..=(y_max + 1)).rev() {
             let mut new_line = String::new();
             for x in (x_min - 1)..=(x_max + 1) {
-                // TODO: next position and not current
-                if (x, y) == self.current_position {
+                if (x, y) == self.get_next_position() {
                     new_line.push('🟪');
                     continue;
                 }
@@ -148,7 +147,7 @@ fn run_test() {
         x_bounds: (-1, 1),
         y_bounds: (-1, 1),
         ressources: example_ressources,
-        current_position: (0, 1),
+        current_position: (-1, 1),
         direction: Direction::Right,
     };
     let res = example.spiral_to_string();
@@ -200,7 +199,7 @@ fn main() {
         x_bounds: (-1, 1),
         y_bounds: (-1, 1),
         ressources: example_ressources,
-        current_position: (0, 1),
+        current_position: (-1, 1),
         direction: Direction::Right,
     };
     example.print();
