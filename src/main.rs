@@ -172,7 +172,7 @@ fn choose_building(turn: u32) -> Option<Building> {
         io::stdin()
             .read_line(&mut buffer)
             .expect("Expected first user input");
-        match buffer.strip_suffix("\n").unwrap() {
+        match buffer.trim() {
             "1" => return Some(building1),
             "2" => return Some(building2),
             "Q" => return None,
