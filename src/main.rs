@@ -237,6 +237,56 @@ impl State {
             buffer.clear();
         }
     }
+
+    fn turn(&self) -> Option<Self> {
+        self.print();
+        let mut new_state = self.clone();
+        let new_building = self.choose_building();
+        if new_building.is_none() {
+            return None;
+        }
+        let new_building = new_building.unwrap();
+
+        // Pay cost
+        let cost = new_building.cost();
+        for resource in cost {
+            match resource {
+                Resources::WorkingPeople(n) => new_state.owned_resources.occupied_people += n,
+                Resources::Wood(n) => new_state.owned_resources.wood -= n,
+                Resources::Rock(n) => new_state.owned_resources.rock -= n,
+            }
+        }
+
+        // Update map (coordinates, direction, bounds)
+        new_state.spiral.insert(self.current_position, new_building);
+        let (nx, ny) = self.get_next_position();
+        if nx < self.x_bounds.0 {
+            // ↑o
+            // x←
+            new_state.x_bounds.0 = nx;
+            new_state.direction = Direction::Up;
+        } else if nx > self.x_bounds.1 {
+            // →x
+            // o↓
+            new_state.x_bounds.1 = nx;
+            new_state.direction = Direction::Down;
+        } else if ny < self.y_bounds.0 {
+            // o↓
+            // ←x
+            new_state.y_bounds.0 = ny;
+            new_state.direction = Direction::Left;
+        } else if ny > self.y_bounds.1 {
+            // x→
+            // ↑o
+            new_state.y_bounds.1 = ny;
+            new_state.direction = Direction::Right;
+        }
+        new_state.current_position = (nx, ny);
+
+        // Apply effects and update resources
+
+        Some(new_state)
+    }
 }
 
 #[test]
