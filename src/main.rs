@@ -2,10 +2,10 @@ use std::{collections::HashMap, io};
 
 use enum_derived::Rand;
 
-enum ResourcesTypes {
-    WorkingPeople,
-    Wood,
-    Rock,
+enum Resources {
+    WorkingPeople(u32),
+    Wood(u32),
+    Rock(u32),
 }
 
 #[derive(Debug, Clone)]
@@ -50,6 +50,39 @@ impl Building {
         res.push_str(&self.get_name());
         res
     }
+
+    fn cost(&self) -> Vec<Resources> {
+        match *self {
+            Building::House => vec![Resources::Wood(1)],
+            Building::Forest => vec![Resources::WorkingPeople(1)],
+            Building::Quarry => vec![Resources::WorkingPeople(1)],
+            Building::Workshop => vec![Resources::WorkingPeople(2), Resources::Wood(1), Resources::Rock(1)],
+        }
+    }
+
+    fn can_be_built(&self, state: &State) -> bool {
+        let cost = self.cost();
+        for resource in cost {
+            match resource {
+                Resources::WorkingPeople(n) => {
+                    if state.owned_resources.total_people - state.owned_resources.occupied_people < n {
+                        return false;
+                    }
+                },
+                Resources::Wood(n) => {
+                    if state.owned_resources.wood < n {
+                        return false;
+                    }
+                },
+                Resources::Rock(n) => {
+                    if state.owned_resources.rock < n {
+                        return false;
+                    }
+                },
+            }
+        }
+        true
+    }
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -66,7 +99,7 @@ struct State {
     spiral: HashMap<(i32, i32), Building>,
     x_bounds: (i32, i32),
     y_bounds: (i32, i32),
-    resources: GlobalResources,
+    owned_resources: GlobalResources,
     current_position: (i32, i32),
     direction: Direction,
 }
@@ -86,7 +119,7 @@ impl State {
             spiral: initial_spiral,
             x_bounds: (0, 0),
             y_bounds: (0, 0),
-            resources: initial_resources,
+            owned_resources: initial_resources,
             current_position: (0, 0),
             direction: Direction::Right,
         }
@@ -128,10 +161,10 @@ impl State {
         println!("----------");
         println!(
             "👥 Population: {} / {} (occupied/total)",
-            self.resources.occupied_people, self.resources.total_people
+            self.owned_resources.occupied_people, self.owned_resources.total_people
         );
-        println!("🪵 Wood: {}", self.resources.wood);
-        println!("🪨 Rock: {}", self.resources.rock);
+        println!("🪵 Wood: {}", self.owned_resources.wood);
+        println!("🪨 Rock: {}", self.owned_resources.rock);
         println!("\nCity");
         println!("----");
         println!("{}", self.spiral_to_string());
@@ -146,46 +179,63 @@ impl State {
             Direction::Down => (cx, cy - 1),
         }
     }
-}
 
-fn choose_building(turn: u32) -> Option<Building> {
-    fn correct_proposition(turn: u32, building1: Building, building2: Building) -> bool {
-        if building1 == building2 {
-            return false;
+    fn choose_building(&self) -> Option<Building> {
+        fn correct_proposition(turn: u32, building1: Building, building2: Building) -> bool {
+            if building1 == building2 {
+                return false;
+            }
+
+            if turn == 0 && (building1 == Building::Workshop || building2 == Building::Workshop) {
+                return false;
+            }
+
+            true
         }
 
-        if turn == 0 && (building1 == Building::Workshop || building2 == Building::Workshop) {
-            return false;
+        let mut building1 = Building::House;
+        let mut building2 = Building::House;
+        while !correct_proposition(self.turn, building1, building2) {
+            building1 = Building::rand();
+            building2 = Building::rand();
+        }
+        
+        println!("1. {}", building1.building_to_string());
+        println!("2. {}", building2.building_to_string());
+
+        if !building1.can_be_built(&self) && !building2.can_be_built(&self) {
+            println!("You cannot build any of the buildings, you loose!");
+            return None;
         }
 
-        true
-    }
+        println!("Choose building 1 or 2 (or Q to quit game):");
 
-    let mut building1 = Building::House;
-    let mut building2 = Building::House;
-    while !correct_proposition(turn, building1, building2) {
-        building1 = Building::rand();
-        building2 = Building::rand();
-    }
-
-    println!("Choose building 1 or 2:");
-    println!("1. {}", building1.building_to_string());
-    println!("2. {}", building2.building_to_string());
-    println!("Q. Quit\n");
-
-    let mut buffer = String::new();
-    loop {
-        io::stdin()
-            .read_line(&mut buffer)
-            .expect("Expected first user input");
-        match buffer.trim() {
-            "1" => return Some(building1),
-            "2" => return Some(building2),
-            "Q" => return None,
-            "q" => return None,
-            _ => println!("Please enter a correct value: '1', '2' or 'Q'"),
+        let mut buffer = String::new();
+        loop {
+            io::stdin()
+                .read_line(&mut buffer)
+                .expect("Expected first user input");
+            match buffer.trim() {
+                "1" => {
+                    if !building1.can_be_built(&self) {
+                        println!("You cannot build {}, choose another building!", building1.building_to_string())
+                    } else {
+                        return Some(building1);
+                    }
+                },
+                "2" => {
+                    if !building2.can_be_built(&self) {
+                        println!("You cannot build {}, choose another building!", building2.building_to_string())
+                    } else {
+                        return Some(building2);
+                    }
+                },
+                "Q" => return None,
+                "q" => return None,
+                _ => println!("Please enter a correct value: '1', '2' or 'Q'"),
+            }
+            buffer.clear();
         }
-        buffer.clear();
     }
 }
 
@@ -212,7 +262,7 @@ fn test_spiral_print() {
         spiral: example_spiral,
         x_bounds: (-1, 1),
         y_bounds: (-1, 1),
-        resources: example_resources,
+        owned_resources: example_resources,
         current_position: (-1, 1),
         direction: Direction::Right,
     };
@@ -267,7 +317,7 @@ fn _spiral_printing_example() {
         spiral: example_spiral,
         x_bounds: (-1, 1),
         y_bounds: (-1, 1),
-        resources: example_resources,
+        owned_resources: example_resources,
         current_position: (-1, 1),
         direction: Direction::Right,
     };
@@ -276,7 +326,33 @@ fn _spiral_printing_example() {
 
 fn _choose_buiding_example() {
     // Use turn=0 to check that we never have a workshop in this case
-    let new_building = choose_building(2);
+    let mut example_spiral = HashMap::new();
+    example_spiral.insert((0, 0), Building::House);
+    example_spiral.insert((1, 0), Building::Forest);
+    example_spiral.insert((1, -1), Building::House);
+    example_spiral.insert((0, -1), Building::House);
+    example_spiral.insert((-1, -1), Building::Quarry);
+    example_spiral.insert((-1, 0), Building::Workshop);
+    example_spiral.insert((-1, 1), Building::House);
+
+    let example_resources = GlobalResources {
+        total_people: 4,
+        occupied_people: 4,
+        wood: 8,
+        rock: 4,
+    };
+    let example = State {
+        turn: 6,
+        spiral: example_spiral,
+        x_bounds: (-1, 1),
+        y_bounds: (-1, 1),
+        owned_resources: example_resources,
+        current_position: (-1, 1),
+        direction: Direction::Right,
+    };
+
+    example.print();
+    let new_building = example.choose_building();
     println!("Chosen building: {new_building:?}");
 }
 
