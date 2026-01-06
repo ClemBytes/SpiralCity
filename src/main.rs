@@ -2,8 +2,14 @@ use std::{collections::HashMap, io};
 
 use enum_derived::Rand;
 
+enum ResourcesTypes {
+    WorkingPeople,
+    Wood,
+    Rock,
+}
+
 #[derive(Debug, Clone)]
-struct GlobalRessources {
+struct GlobalResources {
     total_people: u32,
     occupied_people: u32,
     wood: u32,
@@ -60,7 +66,7 @@ struct State {
     spiral: HashMap<(i32, i32), Building>,
     x_bounds: (i32, i32),
     y_bounds: (i32, i32),
-    ressources: GlobalRessources,
+    resources: GlobalResources,
     current_position: (i32, i32),
     direction: Direction,
 }
@@ -69,7 +75,7 @@ impl State {
     fn initialize() -> Self {
         let mut initial_spiral = HashMap::new();
         initial_spiral.insert((0, 0), Building::House);
-        let initial_ressources = GlobalRessources {
+        let initial_resources = GlobalResources {
             total_people: 1,
             occupied_people: 0,
             wood: 0,
@@ -80,7 +86,7 @@ impl State {
             spiral: initial_spiral,
             x_bounds: (0, 0),
             y_bounds: (0, 0),
-            ressources: initial_ressources,
+            resources: initial_resources,
             current_position: (0, 0),
             direction: Direction::Right,
         }
@@ -118,14 +124,14 @@ impl State {
         println!("\n===========================");
         println!("=== SpiralCity - Turn {} ===", self.turn);
         println!("===========================\n");
-        println!("Ressources");
+        println!("Resources");
         println!("----------");
         println!(
             "👥 Population: {} / {} (occupied/total)",
-            self.ressources.occupied_people, self.ressources.total_people
+            self.resources.occupied_people, self.resources.total_people
         );
-        println!("🪵 Wood: {}", self.ressources.wood);
-        println!("🪨 Rock: {}", self.ressources.rock);
+        println!("🪵 Wood: {}", self.resources.wood);
+        println!("🪨 Rock: {}", self.resources.rock);
         println!("\nCity");
         println!("----");
         println!("{}", self.spiral_to_string());
@@ -143,7 +149,7 @@ impl State {
 }
 
 fn choose_building(turn: u32) -> Option<Building> {
-    fn correct_selection(turn: u32, building1: Building, building2: Building) -> bool {
+    fn correct_proposition(turn: u32, building1: Building, building2: Building) -> bool {
         if building1 == building2 {
             return false;
         }
@@ -157,7 +163,7 @@ fn choose_building(turn: u32) -> Option<Building> {
 
     let mut building1 = Building::House;
     let mut building2 = Building::House;
-    while !correct_selection(turn, building1, building2) {
+    while !correct_proposition(turn, building1, building2) {
         building1 = Building::rand();
         building2 = Building::rand();
     }
@@ -195,7 +201,7 @@ fn test_spiral_print() {
     example_spiral.insert((-1, 0), Building::Workshop);
     example_spiral.insert((-1, 1), Building::House);
 
-    let example_ressources = GlobalRessources {
+    let example_resources = GlobalResources {
         total_people: 4,
         occupied_people: 3,
         wood: 8,
@@ -206,7 +212,7 @@ fn test_spiral_print() {
         spiral: example_spiral,
         x_bounds: (-1, 1),
         y_bounds: (-1, 1),
-        ressources: example_ressources,
+        resources: example_resources,
         current_position: (-1, 1),
         direction: Direction::Right,
     };
@@ -250,7 +256,7 @@ fn _spiral_printing_example() {
     example_spiral.insert((-1, 0), Building::Workshop);
     example_spiral.insert((-1, 1), Building::House);
 
-    let example_ressources = GlobalRessources {
+    let example_resources = GlobalResources {
         total_people: 4,
         occupied_people: 3,
         wood: 8,
@@ -261,7 +267,7 @@ fn _spiral_printing_example() {
         spiral: example_spiral,
         x_bounds: (-1, 1),
         y_bounds: (-1, 1),
-        ressources: example_ressources,
+        resources: example_resources,
         current_position: (-1, 1),
         direction: Direction::Right,
     };
