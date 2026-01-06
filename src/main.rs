@@ -184,7 +184,7 @@ fn choose_building(turn: u32) -> Option<Building> {
 }
 
 #[test]
-fn run_tests() {
+fn test_spiral_print() {
     // Test spiral print
     let mut example_spiral = HashMap::new();
     example_spiral.insert((0, 0), Building::House);
@@ -215,7 +215,10 @@ fn run_tests() {
         res,
         String::from("⬛⬛⬛⬛⬛\n⬛🏠🟪⬛⬛\n⬛🪚🏠🌲⬛\n⬛🪨🏠🏠⬛\n⬛⬛⬛⬛⬛\n")
     );
+}
 
+#[test]
+fn test_get_next_position() {
     // Test get next position
     let mut example_coordinates = State::initialize();
     assert_eq!(example_coordinates.get_next_position(), (1, 0));
@@ -236,7 +239,7 @@ fn run_tests() {
     assert_eq!(example_coordinates.get_next_position(), (-1, 1));
 }
 
-fn _test_spiral_printing() {
+fn _spiral_printing_example() {
     println!("--- Trying spiral printing ---");
     let mut example_spiral = HashMap::new();
     example_spiral.insert((0, 0), Building::House);
@@ -265,12 +268,12 @@ fn _test_spiral_printing() {
     example.print();
 }
 
-fn _test_choose_buiding() {
+fn _choose_buiding_example() {
     // Use turn=0 to check that we never have a workshop in this case
     let new_building = choose_building(2);
     println!("Chosen building: {new_building:?}");
 }
 
 fn main() {
-    _test_choose_buiding();
+    _choose_buiding_example();
 }
