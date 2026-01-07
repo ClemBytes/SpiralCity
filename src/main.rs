@@ -83,6 +83,41 @@ impl Building {
         }
         true
     }
+
+    fn production(&self, coordinates: (i32, i32), state: &State) -> Option<Resources> {
+        let mut neighbours = vec![];
+        let (x, y) = coordinates;
+        for (nx, ny) in [(x - 1, y), (x + 1, y), (x, y - 1), (x, y + 1)] {
+            if state.spiral.contains_key(&(nx, ny)) {
+                neighbours.push(*state.spiral.get(&(nx, ny)).unwrap());
+            }
+        }
+        match *self {
+            Building::Forest => {
+                let mut nb_wood = 2;
+                for neighbour in neighbours {
+                    match neighbour {
+                        Building::Quarry => nb_wood -= 1,
+                        Building::Workshop => nb_wood += 1,
+                        _ => {},
+                    }
+                }
+                Some(Resources::Wood(nb_wood))
+            },
+            Building::Quarry => {
+                let mut nb_rock = 2;
+                for neighbour in neighbours {
+                    match neighbour {
+                        Building::Forest => nb_rock -= 1,
+                        Building::Workshop => nb_rock += 1,
+                        _ => {},
+                    }
+                }
+                Some(Resources::Rock(nb_rock))
+            },
+            _ => None,
+        }
+    }
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -284,6 +319,25 @@ impl State {
         new_state.current_position = (nx, ny);
 
         // Apply effects and update resources
+        let mut nb_people = 0;
+        for (&coordinates, &building) in &new_state.spiral {
+            // Each house adds a person
+            if building == Building::House {
+                nb_people += 1;
+                continue;
+            }
+
+            // Update other resources
+            let option_produced_resources = building.production(coordinates, &new_state);
+            if let Some(produced_resources) = option_produced_resources {
+                match produced_resources {
+                    Resources::Wood(n) => new_state.owned_resources.wood += n,
+                    Resources::Rock(n) => new_state.owned_resources.rock += n,
+                    _ => {},
+                }
+            }
+        }
+        new_state.owned_resources.total_people = nb_people;
 
         Some(new_state)
     }
