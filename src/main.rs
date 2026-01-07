@@ -276,6 +276,7 @@ impl State {
     fn turn(&self) -> Option<Self> {
         self.print();
         let mut new_state = self.clone();
+        new_state.turn += 1;
         let new_building = self.choose_building();
         if new_building.is_none() {
             return None;
@@ -345,10 +346,12 @@ impl State {
 }
 
 fn play() {
+    println!("---------------------------");
     println!("Welcome to 🌀 SpiralCity 🌀");
+    println!("---------------------------");
     println!("Your goal is to go as far as possible in the spiral, by choosing the good next building.");
     println!("You loose if you cannot build any of the 2 proposed buildings.");
-    println!("Have fun!\n");
+    println!("Have fun");
     let mut state = State::initialize();
     loop {
         let option_state = state.turn();
@@ -357,6 +360,7 @@ fn play() {
             break;
         } else {
             state = option_state.unwrap();
+            print!("{esc}[2J{esc}[1;1H", esc = 27 as char);
         }
     }
 }
