@@ -343,6 +343,23 @@ impl State {
     }
 }
 
+fn play() {
+    println!("Welcome to 🌀 SpiralCity 🌀");
+    println!("Your goal is to go as far as possible in the spiral, by choosing the good next building.");
+    println!("You loose if you cannot build any of the 2 proposed buildings.");
+    println!("Have fun!\n");
+    let mut state = State::initialize();
+    loop {
+        let option_state = state.turn();
+        if option_state.is_none() {
+            println!("Thanks for playing!");
+            break;
+        } else {
+            state = option_state.unwrap();
+        }
+    }
+}
+
 #[test]
 fn test_spiral_print() {
     // Test spiral print
@@ -461,5 +478,5 @@ fn _choose_buiding_example() {
 }
 
 fn main() {
-    _choose_buiding_example();
+    play();
 }
