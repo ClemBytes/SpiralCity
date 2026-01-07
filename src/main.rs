@@ -293,7 +293,8 @@ impl State {
         }
 
         // Update map (coordinates, direction, bounds)
-        new_state.spiral.insert(self.current_position, new_building);
+        let new_coordinates = self.get_next_position();
+        new_state.spiral.insert(new_coordinates, new_building);
         let (nx, ny) = self.get_next_position();
         if nx < self.x_bounds.0 {
             // ↑o
