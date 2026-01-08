@@ -168,7 +168,31 @@ impl State {
             let mut new_line = String::new();
             for x in (x_min - 1)..=(x_max + 1) {
                 if (x, y) == self.get_next_position() {
-                    new_line.push('🟪');
+                    if x < self.x_bounds.0 {
+                        // ↑o
+                        // x←
+                        new_line.push('⬑');
+                    } else if x > self.x_bounds.1 {
+                        // →x
+                        // o↓
+                        new_line.push('↴');
+                    } else if y < self.y_bounds.0 {
+                        // o↓
+                        // ←x
+                        new_line.push('↲');
+                    } else if y > self.y_bounds.1 {
+                        // x→
+                        // ↑o
+                        new_line.push('↱');
+                    } else {
+                        match self.direction {
+                            Direction::Down => new_line.push('🡻'),
+                            Direction::Up => new_line.push('🡹'),
+                            Direction::Left => new_line.push('🡸'),
+                            Direction::Right => new_line.push('🡺'),
+                        }
+                    }
+                    new_line.push(' ');
                     continue;
                 }
                 let building = self.spiral.get(&(x, y));
@@ -346,12 +370,13 @@ impl State {
 }
 
 fn play() {
+    print!("{esc}[2J{esc}[1;1H", esc = 27 as char);
     println!("---------------------------");
     println!("Welcome to 🌀 SpiralCity 🌀");
     println!("---------------------------");
     println!("Your goal is to go as far as possible in the spiral, by choosing the good next building.");
     println!("You loose if you cannot build any of the 2 proposed buildings.");
-    println!("Have fun");
+    println!("Have fun!");
     let mut state = State::initialize();
     loop {
         let option_state = state.turn();
