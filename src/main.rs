@@ -171,19 +171,19 @@ impl State {
                     if x < self.x_bounds.0 {
                         // ↑o
                         // x←
-                        new_line.push('⬑');
+                        new_line.push('⮤');
                     } else if x > self.x_bounds.1 {
                         // →x
                         // o↓
-                        new_line.push('↴');
+                        new_line.push('⮧');
                     } else if y < self.y_bounds.0 {
                         // o↓
                         // ←x
-                        new_line.push('↲');
+                        new_line.push('⮠');
                     } else if y > self.y_bounds.1 {
                         // x→
                         // ↑o
-                        new_line.push('↱');
+                        new_line.push('⮣');
                     } else {
                         match self.direction {
                             Direction::Down => new_line.push('🡻'),
