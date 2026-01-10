@@ -64,24 +64,24 @@ impl Building {
         let mut res = String::new();
         match *self {
             Building::House => {
-                res.push_str("Cost: -1 wood 🪵\n");
-                res.push_str("Production: +1 people 👥 (once when built)\n");
-                res.push_str("Special effect: none\n");
+                res.push_str("    Cost           : -1 wood 🪵\n");
+                res.push_str("    Production     : +1 people 👥 (once when built)\n");
+                res.push_str("    Special effect : none\n");
             },
             Building::Forest => {
-                res.push_str("Cost: 1 working people 👥\n");
-                res.push_str("Production: +2 wood 🪵 / turn\n");
-                res.push_str("Special effect: -1 wood 🪵 if next to a quarry 🪨\n");
+                res.push_str("    Cost           : 1 working people 👥\n");
+                res.push_str("    Production     : +2 wood 🪵 / turn\n");
+                res.push_str("    Special effect : -1 wood 🪵 if next to a quarry 🪨\n");
             },
             Building::Quarry => {
-                res.push_str("Cost: 1 working people 👥\n");
-                res.push_str("Production: +rocks 🪨 / turn\n");
-                res.push_str("Special effect: -1 rock 🪨 if next to a forest 🌲\n");
+                res.push_str("    Cost           : 1 working people 👥\n");
+                res.push_str("    Production     : +rocks 🪨 / turn\n");
+                res.push_str("    Special effect : -1 rock 🪨 if next to a forest 🌲\n");
             },
             Building::Workshop => {
-                res.push_str("Cost: 2 working people 👥 | -1 wood 🪵 | -1 rock 🪨\n");
-                res.push_str("Production: none\n");
-                res.push_str("Special effect: adjacent buildings produce +1 resource\n");
+                res.push_str("    Cost           : 2 working people 👥 | -1 wood 🪵 | -1 rock 🪨\n");
+                res.push_str("    Production     : none\n");
+                res.push_str("    Special effect : adjacent buildings produce +1 resource\n");
             },
         }
         res
@@ -246,11 +246,11 @@ impl State {
         println!("Resources");
         println!("----------");
         println!(
-            "👥 Population: {} / {} (occupied/total)",
+            "👥 Population : {} / {} (occupied/total)",
             self.owned_resources.occupied_people, self.owned_resources.total_people
         );
-        println!("🪵 Wood: {}", self.owned_resources.wood);
-        println!("🪨 Rock: {}", self.owned_resources.rock);
+        println!("🪵 Wood       : {}", self.owned_resources.wood);
+        println!("🪨 Rock       : {}", self.owned_resources.rock);
         println!("\nCity");
         println!("----");
         println!("{}", self.spiral_to_string());
@@ -286,9 +286,9 @@ impl State {
             building2 = Building::rand();
         }
         
-        println!("1. {}", building1.building_to_string());
+        println!("[1] {}", building1.building_to_string());
         println!("{}", building1.characteristics_to_string());
-        println!("2. {}", building2.building_to_string());
+        println!("[2] {}", building2.building_to_string());
         println!("{}", building2.characteristics_to_string());
 
         if !building1.can_be_built(&self) && !building2.can_be_built(&self) {
@@ -296,7 +296,7 @@ impl State {
             return None;
         }
 
-        println!("Choose building 1 or 2 (or Q to quit game):");
+        println!("> Choose building 1 or 2 (Q to quit):");
 
         let mut buffer = String::new();
         loop {
