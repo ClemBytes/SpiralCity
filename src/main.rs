@@ -56,7 +56,11 @@ impl Building {
             Building::House => vec![Resources::Wood(1)],
             Building::Forest => vec![Resources::WorkingPeople(1)],
             Building::Quarry => vec![Resources::WorkingPeople(1)],
-            Building::Workshop => vec![Resources::WorkingPeople(2), Resources::Wood(1), Resources::Rock(1)],
+            Building::Workshop => vec![
+                Resources::WorkingPeople(2),
+                Resources::Wood(1),
+                Resources::Rock(1),
+            ],
         }
     }
 
@@ -67,22 +71,24 @@ impl Building {
                 res.push_str("    Cost           : -1 wood 🪵\n");
                 res.push_str("    Production     : +1 people 👥 (once when built)\n");
                 res.push_str("    Special effect : none\n");
-            },
+            }
             Building::Forest => {
                 res.push_str("    Cost           : 1 working people 👥\n");
                 res.push_str("    Production     : +2 wood 🪵 / turn\n");
                 res.push_str("    Special effect : -1 wood 🪵 if next to a quarry 🪨\n");
-            },
+            }
             Building::Quarry => {
                 res.push_str("    Cost           : 1 working people 👥\n");
                 res.push_str("    Production     : +rocks 🪨 / turn\n");
                 res.push_str("    Special effect : -1 rock 🪨 if next to a forest 🌲\n");
-            },
+            }
             Building::Workshop => {
-                res.push_str("    Cost           : 2 working people 👥 | -1 wood 🪵 | -1 rock 🪨\n");
+                res.push_str(
+                    "    Cost           : 2 working people 👥 | -1 wood 🪵 | -1 rock 🪨\n",
+                );
                 res.push_str("    Production     : none\n");
                 res.push_str("    Special effect : adjacent buildings produce +1 resource\n");
-            },
+            }
         }
         res
     }
@@ -92,20 +98,22 @@ impl Building {
         for resource in cost {
             match resource {
                 Resources::WorkingPeople(n) => {
-                    if state.owned_resources.total_people - state.owned_resources.occupied_people < n {
+                    if state.owned_resources.total_people - state.owned_resources.occupied_people
+                        < n
+                    {
                         return false;
                     }
-                },
+                }
                 Resources::Wood(n) => {
                     if state.owned_resources.wood < n {
                         return false;
                     }
-                },
+                }
                 Resources::Rock(n) => {
                     if state.owned_resources.rock < n {
                         return false;
                     }
-                },
+                }
             }
         }
         true
@@ -126,22 +134,22 @@ impl Building {
                     match neighbour {
                         Building::Quarry => nb_wood -= 1,
                         Building::Workshop => nb_wood += 1,
-                        _ => {},
+                        _ => {}
                     }
                 }
                 Some(Resources::Wood(nb_wood))
-            },
+            }
             Building::Quarry => {
                 let mut nb_rock = 2;
                 for neighbour in neighbours {
                     match neighbour {
                         Building::Forest => nb_rock -= 1,
                         Building::Workshop => nb_rock += 1,
-                        _ => {},
+                        _ => {}
                     }
                 }
                 Some(Resources::Rock(nb_rock))
-            },
+            }
             _ => None,
         }
     }
@@ -285,13 +293,13 @@ impl State {
             building1 = Building::rand();
             building2 = Building::rand();
         }
-        
+
         println!("[1] {}", building1.building_to_string());
         println!("{}", building1.characteristics_to_string());
         println!("[2] {}", building2.building_to_string());
         println!("{}", building2.characteristics_to_string());
 
-        if !building1.can_be_built(&self) && !building2.can_be_built(&self) {
+        if !building1.can_be_built(self) && !building2.can_be_built(self) {
             println!("You cannot build any of the buildings, you loose!");
             return None;
         }
@@ -305,19 +313,25 @@ impl State {
                 .expect("Expected first user input");
             match buffer.trim() {
                 "1" => {
-                    if !building1.can_be_built(&self) {
-                        println!("You cannot build {}, choose another building!", building1.building_to_string())
+                    if !building1.can_be_built(self) {
+                        println!(
+                            "You cannot build {}, choose another building!",
+                            building1.building_to_string()
+                        )
                     } else {
                         return Some(building1);
                     }
-                },
+                }
                 "2" => {
-                    if !building2.can_be_built(&self) {
-                        println!("You cannot build {}, choose another building!", building2.building_to_string())
+                    if !building2.can_be_built(self) {
+                        println!(
+                            "You cannot build {}, choose another building!",
+                            building2.building_to_string()
+                        )
                     } else {
                         return Some(building2);
                     }
-                },
+                }
                 "Q" => return None,
                 "q" => return None,
                 _ => println!("Please enter a correct value: '1', '2' or 'Q'"),
@@ -330,11 +344,7 @@ impl State {
         self.print();
         let mut new_state = self.clone();
         new_state.turn += 1;
-        let new_building = self.choose_building();
-        if new_building.is_none() {
-            return None;
-        }
-        let new_building = new_building.unwrap();
+        let new_building = self.choose_building()?;
 
         // Pay cost
         let cost = new_building.cost();
@@ -388,7 +398,7 @@ impl State {
                 match produced_resources {
                     Resources::Wood(n) => new_state.owned_resources.wood += n,
                     Resources::Rock(n) => new_state.owned_resources.rock += n,
-                    _ => {},
+                    _ => {}
                 }
             }
         }
@@ -403,18 +413,20 @@ fn play() {
     println!("---------------------------");
     println!("Welcome to 🌀 SpiralCity 🌀");
     println!("---------------------------");
-    println!("Your goal is to go as far as possible in the spiral, by choosing the good next building.");
+    println!(
+        "Your goal is to go as far as possible in the spiral, by choosing the good next building."
+    );
     println!("You loose if you cannot build any of the 2 proposed buildings.");
     println!("Have fun!");
     let mut state = State::initialize();
     loop {
         let option_state = state.turn();
-        if option_state.is_none() {
+        if let Some(st) = option_state {
+            state = st;
+            print!("{esc}[2J{esc}[1;1H", esc = 27 as char);
+        } else {
             println!("Thanks for playing!");
             break;
-        } else {
-            state = option_state.unwrap();
-            print!("{esc}[2J{esc}[1;1H", esc = 27 as char);
         }
     }
 }
