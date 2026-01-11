@@ -2,10 +2,18 @@ use std::{collections::HashMap, io};
 
 use enum_derived::Rand;
 
+#[derive(Debug, Clone, Copy)]
 enum Resources {
     WorkingPeople(u32),
     Wood(u32),
     Rock(u32),
+}
+
+impl Resources {
+    fn delta_to_string(delta_production: &[Self]) -> String {
+        let mut res = String::new();
+        res
+    }
 }
 
 #[derive(Debug, Clone)]
@@ -172,6 +180,7 @@ struct State {
     owned_resources: GlobalResources,
     current_position: (i32, i32),
     direction: Direction,
+    delta_production: Vec<Resources>,
 }
 
 impl State {
@@ -192,6 +201,7 @@ impl State {
             owned_resources: initial_resources,
             current_position: (0, 0),
             direction: Direction::Right,
+            delta_production: vec![],
         }
     }
 
@@ -251,6 +261,10 @@ impl State {
         println!("\n===========================");
         println!("=== SpiralCity - Turn {} ===", self.turn);
         println!("===========================\n");
+        if self.turn != 0 {
+            println!("Last turn : {}", Resources::delta_to_string(&self.delta_production));
+        }
+
         println!("Resources");
         println!("----------");
         println!(
@@ -457,6 +471,7 @@ fn test_spiral_print() {
         owned_resources: example_resources,
         current_position: (-1, 1),
         direction: Direction::Right,
+        delta_production: vec![],
     };
     let res = example.spiral_to_string();
     assert_eq!(
@@ -512,6 +527,7 @@ fn _spiral_printing_example() {
         owned_resources: example_resources,
         current_position: (-1, 1),
         direction: Direction::Right,
+        delta_production: vec![],
     };
     example.print();
 }
@@ -541,6 +557,7 @@ fn _choose_buiding_example() {
         owned_resources: example_resources,
         current_position: (-1, 1),
         direction: Direction::Right,
+        delta_production: vec![],
     };
 
     example.print();
