@@ -4,14 +4,54 @@ use enum_derived::Rand;
 
 #[derive(Debug, Clone, Copy)]
 enum Resources {
-    WorkingPeople(u32),
-    Wood(u32),
-    Rock(u32),
+    WorkingPeople(i32),
+    Wood(i32),
+    Rock(i32),
 }
 
 impl Resources {
+    fn resource_to_symbol(&self) -> char {
+        match *self {
+            Resources::WorkingPeople(_) => '👥',
+            Resources::Wood(_) => '🪵',
+            Resources::Rock(_) => '🪨',
+        }
+    }
+
     fn delta_to_string(delta_production: &[Self]) -> String {
         let mut res = String::new();
+        if delta_production.is_empty() {
+            return String::from("no changes");
+        }
+
+        for (i, resource) in delta_production.iter().enumerate() {
+            let diff = match *resource {
+                Resources::WorkingPeople(n) => n,
+                Resources::Wood(n) => n,
+                Resources::Rock(n) => n,
+            };
+            if diff == 0 {
+                unreachable!("diff of resource {resource:?} should not be 0!");
+            }
+            res.push(resource.resource_to_symbol());
+            res.push(' ');
+
+            if diff > 0 {
+                res.push('+');
+            }
+            res.push_str(format!("{diff}").as_str());
+            res.push(' ');
+
+            if diff > 0 {
+                res.push_str("⬆️");
+            } else {
+                res.push('🔽');
+            }
+
+            if i != delta_production.len() - 1 {
+                res.push_str(" | ");
+            }
+        }
         res
     }
 }
@@ -107,18 +147,18 @@ impl Building {
             match resource {
                 Resources::WorkingPeople(n) => {
                     if state.owned_resources.total_people - state.owned_resources.occupied_people
-                        < n
+                        < n as u32
                     {
                         return false;
                     }
                 }
                 Resources::Wood(n) => {
-                    if state.owned_resources.wood < n {
+                    if state.owned_resources.wood < n as u32 {
                         return false;
                     }
                 }
                 Resources::Rock(n) => {
-                    if state.owned_resources.rock < n {
+                    if state.owned_resources.rock < n as u32 {
                         return false;
                     }
                 }
@@ -262,7 +302,10 @@ impl State {
         println!("=== SpiralCity - Turn {} ===", self.turn);
         println!("===========================\n");
         if self.turn != 0 {
-            println!("Last turn : {}", Resources::delta_to_string(&self.delta_production));
+            println!(
+                "Last turn : {}\n",
+                Resources::delta_to_string(&self.delta_production)
+            );
         }
 
         println!("Resources");
@@ -364,9 +407,11 @@ impl State {
         let cost = new_building.cost();
         for resource in cost {
             match resource {
-                Resources::WorkingPeople(n) => new_state.owned_resources.occupied_people += n,
-                Resources::Wood(n) => new_state.owned_resources.wood -= n,
-                Resources::Rock(n) => new_state.owned_resources.rock -= n,
+                Resources::WorkingPeople(n) => {
+                    new_state.owned_resources.occupied_people += n as u32
+                }
+                Resources::Wood(n) => new_state.owned_resources.wood -= n as u32,
+                Resources::Rock(n) => new_state.owned_resources.rock -= n as u32,
             }
         }
 
@@ -410,13 +455,27 @@ impl State {
             let option_produced_resources = building.production(coordinates, &new_state);
             if let Some(produced_resources) = option_produced_resources {
                 match produced_resources {
-                    Resources::Wood(n) => new_state.owned_resources.wood += n,
-                    Resources::Rock(n) => new_state.owned_resources.rock += n,
+                    Resources::Wood(n) => new_state.owned_resources.wood += n as u32,
+                    Resources::Rock(n) => new_state.owned_resources.rock += n as u32,
                     _ => {}
                 }
             }
         }
         new_state.owned_resources.total_people = nb_people;
+
+        // Update delta_production
+        new_state.delta_production.clear();
+        if new_building == Building::House {
+            new_state.delta_production.push(Resources::WorkingPeople(1));
+        }
+        if new_state.owned_resources.wood != self.owned_resources.wood {
+            let diff = new_state.owned_resources.wood as i32 - self.owned_resources.wood as i32;
+            new_state.delta_production.push(Resources::Wood(diff));
+        }
+        if new_state.owned_resources.rock != self.owned_resources.rock {
+            let diff = new_state.owned_resources.rock as i32 - self.owned_resources.rock as i32;
+            new_state.delta_production.push(Resources::Rock(diff));
+        }
 
         Some(new_state)
     }
