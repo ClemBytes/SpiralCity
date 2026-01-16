@@ -2,6 +2,9 @@ use std::{collections::HashMap, io};
 
 use enum_derived::Rand;
 
+use crate::buildings::BuildingsTest;
+pub mod buildings;
+
 #[derive(Debug, Clone, Copy)]
 enum Resources {
     WorkingPeople(i32),
