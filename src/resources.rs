@@ -1,9 +1,9 @@
 #[derive(Debug, Clone)]
 pub struct GlobalResources {
-    total_people: u32,
-    occupied_people: u32,
-    wood: u32,
-    rock: u32,
+    pub total_people: u32,
+    pub occupied_people: u32,
+    pub wood: u32,
+    pub rock: u32,
 }
 
 impl GlobalResources {
@@ -33,7 +33,7 @@ impl Resources {
         }
     }
 
-    fn delta_to_string(delta_production: &[Self]) -> String {
+    pub fn delta_to_string(delta_production: &[Self]) -> String {
         let mut res = String::new();
         if delta_production.is_empty() {
             return String::from("no changes");

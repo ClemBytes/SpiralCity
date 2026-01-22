@@ -1,6 +1,7 @@
 use enum_derived::Rand;
 
 use crate::resources::Resources;
+use crate::states::State;
 
 #[derive(Debug, Clone, Copy, Rand, PartialEq)]
 pub enum Building {
@@ -11,7 +12,7 @@ pub enum Building {
 }
 
 impl Building {
-    fn convert_to_char(&self) -> char {
+    pub fn convert_to_char(&self) -> char {
         match *self {
             Building::House => '🏠',
             Building::Forest => '🌲',
@@ -29,7 +30,7 @@ impl Building {
         }
     }
 
-    fn building_to_string(&self) -> String {
+    pub fn building_to_string(&self) -> String {
         let mut res = String::new();
         res.push(self.convert_to_char());
         res.push(' ');
@@ -37,7 +38,7 @@ impl Building {
         res
     }
 
-    fn cost(&self) -> Vec<Resources> {
+    pub fn cost(&self) -> Vec<Resources> {
         match *self {
             Building::House => vec![Resources::Wood(1)],
             Building::Forest => vec![Resources::WorkingPeople(1)],
@@ -50,7 +51,7 @@ impl Building {
         }
     }
 
-    fn characteristics_to_string(&self) -> String {
+    pub fn characteristics_to_string(&self) -> String {
         let mut res = String::new();
         match *self {
             Building::House => {
@@ -79,7 +80,7 @@ impl Building {
         res
     }
 
-    fn can_be_built(&self, state: &State) -> bool {
+    pub fn can_be_built(&self, state: &State) -> bool {
         let cost = self.cost();
         for resource in cost {
             match resource {
@@ -105,7 +106,7 @@ impl Building {
         true
     }
 
-    fn production(&self, coordinates: (i32, i32), state: &State) -> Option<Resources> {
+    pub fn production(&self, coordinates: (i32, i32), state: &State) -> Option<Resources> {
         let mut neighbours = vec![];
         let (x, y) = coordinates;
         for (nx, ny) in [(x - 1, y), (x + 1, y), (x, y - 1), (x, y + 1)] {

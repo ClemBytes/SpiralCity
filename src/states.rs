@@ -1,10 +1,12 @@
 use std::{collections::HashMap, io};
 
+use enum_derived::Rand;
+
 use crate::buildings::Building;
 use crate::resources::{GlobalResources, Resources};
 
 #[derive(Debug, Clone, Copy)]
-enum Direction {
+pub enum Direction {
     Right,
     Left,
     Up,
@@ -13,18 +15,18 @@ enum Direction {
 
 #[derive(Debug, Clone)]
 pub struct State {
-    turn: u32,
-    spiral: HashMap<(i32, i32), Building>,
-    x_bounds: (i32, i32),
-    y_bounds: (i32, i32),
-    owned_resources: GlobalResources,
-    current_position: (i32, i32),
-    direction: Direction,
-    delta_production: Vec<Resources>,
+    pub turn: u32,
+    pub spiral: HashMap<(i32, i32), Building>,
+    pub x_bounds: (i32, i32),
+    pub y_bounds: (i32, i32),
+    pub owned_resources: GlobalResources,
+    pub current_position: (i32, i32),
+    pub direction: Direction,
+    pub delta_production: Vec<Resources>,
 }
 
 impl State {
-    fn initialize() -> Self {
+    pub fn initialize() -> Self {
         let mut initial_spiral = HashMap::new();
         initial_spiral.insert((0, 0), Building::House);
         let initial_resources = GlobalResources::initialize();
@@ -40,7 +42,7 @@ impl State {
         }
     }
 
-    fn spiral_to_string(&self) -> String {
+    pub fn spiral_to_string(&self) -> String {
         let (x_min, x_max) = self.x_bounds;
         let (y_min, y_max) = self.y_bounds;
         let mut spiral_string = String::new();
@@ -92,7 +94,7 @@ impl State {
         spiral_string
     }
 
-    fn print(&self) {
+    pub fn print(&self) {
         println!("\n===========================");
         println!("=== SpiralCity - Turn {} ===", self.turn);
         println!("===========================\n");
@@ -103,6 +105,7 @@ impl State {
             );
         }
 
+        // TODO: move to resources crate
         println!("Resources");
         println!("----------");
         println!(
@@ -116,7 +119,7 @@ impl State {
         println!("{}", self.spiral_to_string());
     }
 
-    fn get_next_position(&self) -> (i32, i32) {
+    pub fn get_next_position(&self) -> (i32, i32) {
         let (cx, cy) = self.current_position;
         match self.direction {
             Direction::Right => (cx + 1, cy),
@@ -126,7 +129,7 @@ impl State {
         }
     }
 
-    fn choose_building(&self) -> Option<Building> {
+    pub fn choose_building(&self) -> Option<Building> {
         fn correct_proposition(turn: u32, building1: Building, building2: Building) -> bool {
             if building1 == building2 {
                 return false;
@@ -192,7 +195,7 @@ impl State {
         }
     }
 
-    fn turn(&self) -> Option<Self> {
+    pub fn turn(&self) -> Option<Self> {
         self.print();
         let mut new_state = self.clone();
         new_state.turn += 1;
